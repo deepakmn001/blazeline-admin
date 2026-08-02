@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: theme(colors.line);
+  }
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background-color: theme(colors.canvas);
+    color: theme(colors.ink.DEFAULT);
+  }
+  ::selection {
+    background-color: theme(colors.brand.200);
+    color: theme(colors.brand.900);
+  }
+}
+
+@layer utilities {
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #E2E2E2;
+    border-radius: 999px;
+  }
+  .shimmer-bg {
+    background: linear-gradient(90deg, #F1F1F1 25%, #F8F8F8 37%, #F1F1F1 63%);
+    background-size: 400% 100%;
+  }
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid theme(colors.brand.400);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
