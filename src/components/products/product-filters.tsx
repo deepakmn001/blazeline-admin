@@ -6,7 +6,8 @@ import { Filter } from "lucide-react";
 import { getCategories } from "@/services/category.service";
 import { getSubCategories } from "@/services/subcategory.service";
 
-import { Category, SubCategory } from "@/types/catalog";
+import type { Category } from "@/types/category";
+import type { SubCategory } from "@/types/subcategory";
 
 export function ProductFilters() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -32,8 +33,8 @@ export function ProductFilters() {
 
   async function loadCategories() {
     try {
-      const data = await getCategories();
-      setCategories(data);
+      const { categories } = await getCategories();
+      setCategories(categories);
     } catch (error) {
       console.error(error);
     }
@@ -41,8 +42,11 @@ export function ProductFilters() {
 
   async function loadSubCategories(categoryId: number) {
     try {
-      const data = await getSubCategories(categoryId);
-      setSubCategories(data);
+      const { subcategories } = await getSubCategories({
+        category: categoryId,
+      });
+
+      setSubCategories(subcategories);
     } catch (error) {
       console.error(error);
     }

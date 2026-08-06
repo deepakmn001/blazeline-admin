@@ -7,8 +7,8 @@ import { FolderTree } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 
-import { DataTableColumnHeader } from "@/components/catalog/shared/table/data-table-column-header";
-import { DataTableRowActions } from "@/components/catalog/shared/table/data-table-row-actions";
+import { DataTableColumnHeader } from "@/components/catlog/shared/table/data-table-column-header";
+import { DataTableRowActions } from "@/components/catlog/shared/table/data-table-row-actions";
 
 import type { Category } from "@/types/category";
 

@@ -52,8 +52,8 @@ export async function getCategory(
   id: number
 ): Promise<Category> {
   const { data } = await api.get<Category>(
-    `/categories/${id}/`
-  );
+  `/admin/categories/${id}/`
+);
 
   return data;
 }
@@ -151,7 +151,7 @@ export async function updateCategory(
   }
 
   const { data } = await api.patch<Category>(
-    `/categories/${id}/`,
+  `/admin/categories/${id}/`,
     formData,
     {
       headers: {
@@ -167,7 +167,7 @@ export async function updateCategory(
 export async function deleteCategory(
   id: number
 ): Promise<void> {
-  await api.delete(`/categories/${id}/`);
+  await api.delete(`/admin/categories/${id}/`);
 }
 
 export async function toggleCategoryStatus(
@@ -175,7 +175,7 @@ export async function toggleCategoryStatus(
   active: boolean
 ): Promise<Category> {
   const { data } = await api.patch<Category>(
-    `/categories/${id}/`,
+  `/admin/categories/${id}/`,
     {
       active,
     }
@@ -189,7 +189,7 @@ export async function toggleFeatured(
   featured: boolean
 ): Promise<Category> {
   const { data } = await api.patch<Category>(
-    `/categories/${id}/`,
+  `/admin/categories/${id}/`,
     {
       featured,
     }

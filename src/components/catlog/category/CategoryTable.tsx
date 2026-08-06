@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/catalog/shared/table/data-table";
+import { DataTable } from "@/components/catlog/shared/table/data-table";
 
 import { categoryColumns } from "./category-columns";
 

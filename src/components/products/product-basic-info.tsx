@@ -28,10 +28,8 @@ import { Input } from "@/components/ui/input";
 import { getCategories } from "@/services/category.service";
 import { getSubCategories } from "@/services/subcategory.service";
 
-import {
-  Category,
-  SubCategory,
-} from "@/types/catalog";
+import type { Category } from "@/types/category";
+import type { SubCategory } from "@/types/subcategory";
 
 type ProductBasicInfoProps = {
   productName: string;
@@ -504,7 +502,7 @@ export const ProductBasicInfo = memo(function ProductBasicInfo({
           return;
         }
 
-        setCategories(data);
+        setCategories(data.categories);
       } catch (err) {
         if (
           !isMountedRef.current ||
@@ -549,7 +547,9 @@ export const ProductBasicInfo = memo(function ProductBasicInfo({
 
     async function loadSubCategories() {
       try {
-        const data = await getSubCategories(category as number);
+        const { subcategories } = await getSubCategories({
+  category: category as number,
+});
 
         if (
           !isMountedRef.current ||
@@ -558,7 +558,7 @@ export const ProductBasicInfo = memo(function ProductBasicInfo({
           return;
         }
 
-        setSubCategories(data);
+        setSubCategories(subcategories);
       } catch (err) {
         if (
           !isMountedRef.current ||

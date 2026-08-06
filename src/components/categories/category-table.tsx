@@ -211,9 +211,11 @@ export function CategoryTable({
 
                 <td className="px-4 text-right">
 
-                  <CategoryActions
-                    categoryId={category.id}
-                  />
+                 <CategoryActions
+  categoryId={category.id}
+  featured={category.featured}
+  active={category.active}
+/>
 
                 </td>
 
