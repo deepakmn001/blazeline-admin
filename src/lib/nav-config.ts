@@ -2,6 +2,7 @@ import {
   LayoutGrid,
   Package,
   FolderTree,
+    Layers3,
   Award,
   Percent,
   LayoutTemplate,
@@ -57,6 +58,12 @@ export const navSections: NavSection[] = [
         icon: FolderTree,
         description: "Organize your catalog",
       },
+      {
+  label: "Subcategories",
+  href: "/subcategories",
+  icon: Layers3,
+  description: "Manage subcategories",
+},
       {
         label: "Brands",
         href: "/brands",

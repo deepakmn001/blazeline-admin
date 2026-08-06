@@ -2,8 +2,23 @@
 
 export interface Category {
   id: number;
+
   name: string;
   slug: string;
+
+  group: string;
+  description: string;
+
+  icon?: string;
+  image?: string;
+
+  featured: boolean;
+  active: boolean;
+
+  sort_order?: number;
+
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SubCategory {
