@@ -7,6 +7,8 @@ export interface ProductQuery {
   category?: number;
   subcategory?: number;
   status?: string;
+
+  ordering?: string;
 }
 
 export interface ProductListResponse {
@@ -51,4 +53,19 @@ export async function updateProduct(
 
 export async function deleteProduct(slug: string) {
   await api.delete(`/products/${slug}/`);
+}
+export async function bulkDeleteProducts(ids: number[]): Promise<void> {
+  await api.post("/products/bulk-delete/", { product_ids: ids });
+}
+
+export async function bulkMoveProducts(
+  ids: number[],
+  category: number,
+  subcategory: number
+): Promise<void> {
+  await api.post("/products/bulk-move/", {
+    product_ids: ids,
+    category,
+    subcategory,
+  });
 }
