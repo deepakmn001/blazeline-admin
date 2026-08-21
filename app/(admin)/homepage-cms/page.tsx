@@ -76,7 +76,7 @@ console.log(
 
     try {
       const created = await createHomepageCategory({
-        category: categoryId,
+        category_id: categoryId,
         is_active: true,
         sort_order: items.length,
       });

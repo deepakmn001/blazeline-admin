@@ -17,7 +17,7 @@ export interface HomepageCategoryListResponse {
 }
 
 export interface CreateHomepageCategoryPayload {
-  category: number;
+  category_id: number;
   is_active?: boolean;
   sort_order?: number;
 }
