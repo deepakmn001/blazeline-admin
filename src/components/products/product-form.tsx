@@ -128,15 +128,19 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
   // SLUG
   // ==========================================
 
-  useEffect(() => {
-    setSlug(
-      productName
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "")
-    );
-  }, [productName]);
+useEffect(() => {
+  if (mode !== "create") {
+    return;
+  }
+
+  setSlug(
+    productName
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+  );
+}, [productName, mode]);
 
   // ==========================================
   // EDIT MODE — load without conversion hacks
