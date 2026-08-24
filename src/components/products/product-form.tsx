@@ -41,6 +41,7 @@ import {
 } from "./product-specifications";
 import { ProductOptions } from "./product-options";
 import { ProductVariants } from "./product-variants";
+import { VariantImageManager } from "./variant-image-manager";
 import {
   createEmptyVariant,
   hydrateVariant,
@@ -109,6 +110,9 @@ export function ProductForm({ mode = "create", initialData }: ProductFormProps) 
 
   const [images, setImages] = useState<ProductImageItem[]>([]);
   const originalImagesRef = useRef<ProductImageItem[]>([]);
+  const [variantImages, setVariantImages] = useState<
+  Record<number, ProductImageItem[]>
+>({});
 
   // ==========================================
   // SPECIFICATIONS
@@ -180,12 +184,25 @@ useEffect(() => {
     // `images` field if the variant didn't carry any (defensive — some
     // serializer shapes surface them there instead).
     const sourceImages = initialData.variants[0]?.images?.length
-      ? initialData.variants[0].images
-      : initialData.images;
+  ? initialData.variants[0].images
+  : initialData.images;
 
-    const hydratedImages = hydrateProductImages(sourceImages);
-    setImages(hydratedImages);
-    originalImagesRef.current = hydratedImages;
+const hydratedImages = hydrateProductImages(sourceImages);
+
+setImages(hydratedImages);
+originalImagesRef.current = hydratedImages;
+
+const hydratedVariantImages: Record<number, ProductImageItem[]> = {};
+
+for (const variant of initialData.variants) {
+  if (!variant.id) continue;
+
+  hydratedVariantImages[variant.id] = hydrateProductImages(
+    variant.images ?? []
+  );
+}
+
+setVariantImages(hydratedVariantImages);
   }, [mode, initialData]);
 
   useEffect(() => {
@@ -317,6 +334,93 @@ useEffect(() => {
           originalImagesRef.current = reconciled;
           return reconciled;
         });
+                // ---------------------------------------------------------
+        // Variant-specific images
+        // ---------------------------------------------------------
+        for (const savedVariant of product.variants ?? []) {
+          if (!savedVariant.id) continue;
+
+          const currentVariantImages =
+            variantImages[savedVariant.id] ?? [];
+
+          const originalVariantImages = hydrateProductImages(
+            initialData?.variants.find(
+              (variant) => variant.id === savedVariant.id
+            )?.images ?? []
+          );
+
+          const variantDiff = diffImages(
+            originalVariantImages,
+            currentVariantImages
+          );
+
+          await Promise.all(
+            variantDiff.toDelete.map((id) =>
+              deleteProductImage(id)
+            )
+          );
+
+          await Promise.all(
+            variantDiff.toUpdate.map((update) =>
+              updateProductImage(update.id, {
+                featured: update.featured,
+                sort_order: update.sort_order,
+              })
+            )
+          );
+
+          const variantUploadResults = await Promise.all(
+  variantDiff.toUpload.map(async (upload) => {
+    const uploaded = await uploadProductImage(
+      savedVariant.id!,
+      upload.file,
+      upload.featured,
+      upload.sort_order
+    );
+
+    return {
+      file: upload.file,
+      image: uploaded,
+    };
+  })
+);
+
+setVariantImages((prev) => {
+  const nextImages = (prev[savedVariant.id!] ?? [])
+    .filter(
+      (item) =>
+        !(
+          item.existing &&
+          item.id != null &&
+          variantDiff.toDelete.includes(item.id)
+        )
+    )
+    .map((item) => {
+      if (!item.existing && item.file) {
+        const match = variantUploadResults.find(
+          (result) => result.file === item.file
+        );
+
+        if (match) {
+          return {
+            id: match.image.id,
+            url: match.image.image_url ?? match.image.image,
+            featured: item.featured,
+            sort_order: item.sort_order,
+            existing: true,
+          } satisfies ProductImageItem;
+        }
+      }
+
+      return item;
+    });
+
+  return {
+    ...prev,
+    [savedVariant.id!]: nextImages,
+  };
+});
+        }
       }
 
       toast.success(
@@ -403,7 +507,12 @@ useEffect(() => {
 
       <div className="space-y-6">
         <ProductImageUpload images={images} onImagesChange={setImages} />
-
+<VariantImageManager
+  variants={variants}
+   defaultVariantId={defaultVariant?.id}
+  variantImages={variantImages}
+  setVariantImages={setVariantImages}
+/>
         <ProductBasicInfo
           productName={productName}
           category={category}
@@ -553,7 +662,11 @@ useEffect(() => {
 
         <ProductOptions options={options} setOptions={setOptions} />
 
-        <ProductVariants options={options} variants={variants} setVariants={setVariants} />
+  <ProductVariants
+  options={options}
+  variants={variants}
+  setVariants={setVariants}
+/>
 
         <ProductSpecifications
           specifications={specifications}

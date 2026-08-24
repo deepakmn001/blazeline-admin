@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
-import type { ProductOption, ProductVariant } from "@/types/catalog";
+import type {
+  ProductOption,
+  ProductVariant,
+} from "@/types/catalog";
 import {
   calculateDiscount,
   createEmptyVariant,
@@ -38,7 +41,11 @@ type VariantRowProps = {
   isDuplicateCombo: boolean;
   canDelete: boolean;
   onOptionValueChange: (index: number, optionName: string, value: string) => void;
-  onFieldChange: (index: number, field: NumericField | "sku", value: string | number) => void;
+  onFieldChange: (
+    index: number,
+    field: NumericField | "sku",
+    value: string | number
+  ) => void;
   onBlurSku: (index: number) => void;
   onRemove: (index: number) => void;
   onEnter: (index: number) => void;
@@ -295,7 +302,11 @@ const VariantRow = memo(function VariantRow({
   );
 });
 
-export function ProductVariants({ options, variants, setVariants }: Props) {
+export function ProductVariants({
+  options,
+  variants,
+  setVariants,
+}: Props) {
   const duplicateSkuIndexes = useMemo(() => findDuplicateSKUs(variants), [variants]);
   const duplicateComboIndexes = useMemo(() => findDuplicateCombinations(variants), [variants]);
 
@@ -320,6 +331,7 @@ export function ProductVariants({ options, variants, setVariants }: Props) {
         if (prev.length === 1) {
           return [createEmptyVariant(options)];
         }
+
         return prev.filter((_, i) => i !== index);
       });
     },
