@@ -91,7 +91,6 @@ type VariantImageRowProps = {
   variant: ProductVariant;
   images: ProductImageItem[];
   isExpanded: boolean;
-  isGeneralGallery: boolean;
   onToggleExpand: (variantId: number) => void;
   onImagesChange: (variantId: number, images: ProductImageItem[]) => void;
 };
@@ -101,7 +100,6 @@ const VariantImageRow = memo(function VariantImageRow({
   variant,
   images,
   isExpanded,
-  isGeneralGallery,
   onToggleExpand,
   onImagesChange,
 }: VariantImageRowProps) {
@@ -113,43 +111,7 @@ const VariantImageRow = memo(function VariantImageRow({
     [images]
   );
 
-  if (isGeneralGallery) {
-    return (
-      <div className="border-b border-line/70 last:border-b-0">
-        <div className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
-          <div className="flex min-w-0 items-start gap-3">
-            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[11px] font-semibold text-brand-600">
-              {index + 1}
-            </span>
-
-            <div className="min-w-0">
-              <p
-                className="truncate text-sm font-semibold text-ink"
-                title={label}
-              >
-                {label}
-              </p>
-
-              {variant.sku ? (
-                <p className="mt-0.5 truncate font-mono text-xs text-ink-faint">
-                  SKU: {variant.sku}
-                </p>
-              ) : null}
-
-              <p className="mt-1.5 text-xs leading-relaxed text-ink-faint">
-                Existing product images are the general gallery and are shared
-                across variants unless a variant has its own specific images.
-              </p>
-            </div>
-          </div>
-
-          <span className="shrink-0 rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold text-ink-faint">
-            General gallery
-          </span>
-        </div>
-      </div>
-    );
-  }
+  
 
   const hasId = typeof variant.id === "number";
   const imageCount = images.length;
@@ -268,7 +230,6 @@ const VariantImageRow = memo(function VariantImageRow({
 
 export function VariantImageManager({
   variants,
-  defaultVariantId,
   variantImages,
   setVariantImages,
 }: Props) {
@@ -277,15 +238,14 @@ export function VariantImageManager({
   );
 
   const totalImageCount = useMemo(
-    () =>
-      variants.reduce((sum, variant) => {
-        if (typeof variant.id !== "number") return sum;
-        if (variant.id === defaultVariantId) return sum;
+  () =>
+    variants.reduce((sum, variant) => {
+      if (typeof variant.id !== "number") return sum;
 
-        return sum + (variantImages[variant.id]?.length ?? 0);
-      }, 0),
-    [variants, variantImages, defaultVariantId]
-  );
+      return sum + (variantImages[variant.id]?.length ?? 0);
+    }, 0),
+  [variants, variantImages]
+);
 
   const handleToggleExpand = useCallback((variantId: number) => {
     setExpandedVariantId((prev) => (prev === variantId ? null : variantId));
@@ -332,32 +292,25 @@ export function VariantImageManager({
         </div>
       ) : (
         <div>
-          {variants.map((variant, index) => {
-            const isGeneralGallery =
-              typeof variant.id === "number" &&
-              variant.id === defaultVariantId;
+        
+  {variants.map((variant, index) => {
+  const variantId =
+    typeof variant.id === "number" ? variant.id : null;
 
-            return (
-              <VariantImageRow
-                key={variant.id ?? `unsaved-${index}`}
-                index={index}
-                variant={variant}
-                images={
-                  !isGeneralGallery && typeof variant.id === "number"
-                    ? variantImages[variant.id] ?? []
-                    : []
-                }
-                isExpanded={
-                  !isGeneralGallery &&
-                  typeof variant.id === "number" &&
-                  expandedVariantId === variant.id
-                }
-                isGeneralGallery={isGeneralGallery}
-                onToggleExpand={handleToggleExpand}
-                onImagesChange={handleImagesChange}
-              />
-            );
-          })}
+  return (
+    <VariantImageRow
+      key={variant.id ?? `unsaved-${index}`}
+      index={index}
+      variant={variant}
+      images={variantId !== null ? variantImages[variantId] ?? [] : []}
+isExpanded={
+  variantId !== null && expandedVariantId === variantId
+}
+      onToggleExpand={handleToggleExpand}
+      onImagesChange={handleImagesChange}
+    />
+  );
+})}
         </div>
       )}
     </div>
