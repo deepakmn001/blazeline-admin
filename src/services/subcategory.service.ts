@@ -51,7 +51,7 @@ export async function getSubCategory(
   id: number
 ): Promise<SubCategory> {
   const { data } = await api.get<SubCategory>(
-    `/subcategories/${id}/`
+    `/admin/subcategories/${id}/`
   );
 
   return data;
@@ -76,7 +76,7 @@ export async function createSubCategory(
   }
 
   const { data } = await api.post<SubCategory>(
-    "/subcategories/",
+  "/admin/subcategories/",
     formData,
     {
       headers: {
@@ -134,7 +134,7 @@ export async function updateSubCategory(
   }
 
   const { data } = await api.patch<SubCategory>(
-    `/subcategories/${id}/`,
+  `/admin/subcategories/${id}/`,
     formData,
     {
       headers: {
@@ -149,7 +149,7 @@ export async function updateSubCategory(
 export async function deleteSubCategory(
   id: number
 ): Promise<void> {
-  await api.delete(`/subcategories/${id}/`);
+  await api.delete(`/admin/subcategories/${id}/`);
 }
 
 export async function toggleSubCategoryStatus(
@@ -157,11 +157,11 @@ export async function toggleSubCategoryStatus(
   active: boolean
 ): Promise<SubCategory> {
   const { data } = await api.patch<SubCategory>(
-    `/subcategories/${id}/`,
-    {
-      active,
-    }
-  );
+  `/admin/subcategories/${id}/`,
+  {
+    active,
+  }
+);
 
   return data;
 }
@@ -171,11 +171,11 @@ export async function toggleSubCategoryFeatured(
   featured: boolean
 ): Promise<SubCategory> {
   const { data } = await api.patch<SubCategory>(
-    `/subcategories/${id}/`,
-    {
-      featured,
-    }
-  );
+  `/admin/subcategories/${id}/`,
+  {
+    featured,
+  }
+);
 
   return data;
 }

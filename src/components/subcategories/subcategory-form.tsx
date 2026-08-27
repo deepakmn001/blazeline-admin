@@ -461,32 +461,39 @@ useEffect(() => {
           >
             
             <Select
-              value={String(form.category)}
-              onValueChange={(v) => update("category", Number(v))}
-            >
-              <SelectTrigger
-  id="category"
-  aria-invalid={Boolean(fieldError("category"))}
-  aria-describedby={
-    fieldError("category") ? "category-error" : undefined
+  value={
+    form.category > 0
+      ? String(form.category)
+      : undefined
   }
-  onBlur={() => markTouched("category")}
+  onValueChange={(value) =>
+    update("category", Number(value))
+  }
 >
-  <SelectValue placeholder="Select a parent category">
-    {categories.find(
-      (c) => c.id === Number(form.category)
-    )?.name}
-  </SelectValue>
-</SelectTrigger>
+  <SelectTrigger
+    id="category"
+    aria-invalid={Boolean(fieldError("category"))}
+    aria-describedby={
+      fieldError("category")
+        ? "category-error"
+        : undefined
+    }
+    onBlur={() => markTouched("category")}
+  >
+    <SelectValue placeholder="Select a parent category" />
+  </SelectTrigger>
 
-              <SelectContent>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+  <SelectContent>
+    {categories.map((category) => (
+      <SelectItem
+        key={category.id}
+        value={String(category.id)}
+      >
+        {category.name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
           </Field>
 
           <Field label="Sort Order" htmlFor="sort_order" error={fieldError("sort_order")}>

@@ -65,7 +65,9 @@ export function SubCategoryTable({
               <th className="px-4 py-4 text-center text-xs font-semibold uppercase">
                 Products
               </th>
-
+              <th className="px-4 py-4 text-center text-xs font-semibold uppercase">
+  Sort Order
+</th>
               <th className="px-4 py-4 text-center text-xs font-semibold uppercase">
                 Featured
               </th>
@@ -158,7 +160,11 @@ export function SubCategoryTable({
                 <td className="px-4 text-center font-semibold">
                   {subcategory.product_count}
                 </td>
-
+<td className="px-4 text-center">
+  <span className="inline-flex min-w-10 items-center justify-center rounded-md bg-neutral-100 px-2 py-1 text-xs font-semibold text-ink">
+    {subcategory.sort_order}
+  </span>
+</td>
                 <td className="px-4 text-center">
 
                   <Badge

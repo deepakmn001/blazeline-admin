@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { SubCategoryToolbar } from "@/components/subcategories/subcategory-toolbar";
 import { SubCategoryStats } from "@/components/subcategories/subcategory-stats";
@@ -23,41 +23,51 @@ type Stats = {
   products: number;
 };
 
+type PaginationState = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+};
+
 export default function SubCategoriesClient() {
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
 
-  const [subcategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [subcategories, setSubCategories] = useState<
+    SubCategory[]
+  >([]);
 
   const [stats, setStats] = useState<Stats | null>(null);
 
-  const [pagination, setPagination] = useState({
-    count: 0,
-    next: null as string | null,
-    previous: null as string | null,
-  });
+  const [pagination, setPagination] =
+    useState<PaginationState>({
+      count: 0,
+      next: null,
+      previous: null,
+    });
 
-  useEffect(() => {
-    load();
-  }, []);
+  const load = useCallback(async (currentPage: number) => {
+    setLoading(true);
 
-  async function load() {
     try {
       const [
         {
-          subcategories,
+          subcategories: fetchedSubcategories,
           count,
           next,
           previous,
         },
-        stats,
+        fetchedStats,
       ] = await Promise.all([
-        getSubCategories(),
+        getSubCategories({
+          page: currentPage,
+        }),
         getSubCategoryStats(),
       ]);
 
-      setSubCategories(subcategories);
+      setSubCategories(fetchedSubcategories);
 
-      setStats(stats);
+      setStats(fetchedStats);
 
       setPagination({
         count,
@@ -65,13 +75,46 @@ export default function SubCategoriesClient() {
         previous,
       });
     } catch (error) {
-      console.error(error);
+      console.error(
+        "[SubCategoriesClient] Failed to load subcategories:",
+        error
+      );
+
+      setSubCategories([]);
+
+      setPagination({
+        count: 0,
+        next: null,
+        previous: null,
+      });
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  if (loading) {
+  useEffect(() => {
+    void load(page);
+  }, [load, page]);
+
+  const handleNext = useCallback(() => {
+    if (!pagination.next || loading) {
+      return;
+    }
+
+    setPage((currentPage) => currentPage + 1);
+  }, [pagination.next, loading]);
+
+  const handlePrevious = useCallback(() => {
+    if (!pagination.previous || loading) {
+      return;
+    }
+
+    setPage((currentPage) =>
+      Math.max(1, currentPage - 1)
+    );
+  }, [pagination.previous, loading]);
+
+  if (loading && !stats) {
     return (
       <div className="flex h-96 items-center justify-center">
         Loading...
@@ -110,6 +153,9 @@ export default function SubCategoriesClient() {
             count={pagination.count}
             next={pagination.next}
             previous={pagination.previous}
+            loading={loading}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
           />
         </>
       ) : (

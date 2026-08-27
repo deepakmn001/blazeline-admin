@@ -1,61 +1,94 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { notFound } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 import { SubCategoryForm } from "@/components/subcategories/subcategory-form";
-
 import { getSubCategory } from "@/services/subcategory.service";
 import type { SubCategory } from "@/types/subcategory";
 
 export default function EditSubCategoryPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
 
-  const [subcategory, setSubCategory] = useState<SubCategory | null>(null);
+  const [subcategory, setSubCategory] =
+    useState<SubCategory | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    const id = Number(params.id);
+    const rawId = params?.id;
+    const id = Number(rawId);
 
-    if (!Number.isFinite(id)) {
+    if (!Number.isInteger(id) || id <= 0) {
       setHasError(true);
       setIsLoading(false);
       return;
     }
 
+    let cancelled = false;
+
     async function load() {
       try {
         const data = await getSubCategory(id);
 
-        if (!data) {
-          setHasError(true);
+        if (cancelled) {
           return;
         }
 
         setSubCategory(data);
-      } catch {
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(
+          "[EditSubCategoryPage] Failed to load subcategory:",
+          error
+        );
+
         setHasError(true);
       } finally {
-        setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     }
 
-    load();
-  }, [params.id]);
+    void load();
 
-  if (hasError) {
-    notFound();
+    return () => {
+      cancelled = true;
+    };
+  }, [params?.id]);
+
+  useEffect(() => {
+    if (!hasError) {
+      return;
+    }
+
+    router.replace("/subcategories");
+  }, [hasError, router]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-96 items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
-  if (isLoading || !subcategory) {
+  if (!subcategory) {
     return null;
   }
 
   return (
     <div className="space-y-8">
-      <SubCategoryForm mode="edit" initialData={subcategory} />
+      <SubCategoryForm
+        mode="edit"
+        initialData={subcategory}
+      />
     </div>
   );
 }
