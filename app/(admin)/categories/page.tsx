@@ -5,6 +5,7 @@ import { CategoryPagination } from "@/components/categories/category-pagination"
 import { CategoryEmpty } from "@/components/categories/category-empty";
 
 import { getCategories } from "@/services/category.service";
+export const dynamic = "force-dynamic"; 
 
 export default async function CategoriesPage() {
   const {
