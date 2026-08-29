@@ -15,6 +15,7 @@ import {
   LogOut,
   Upload,
   ClipboardCheck,
+  Truck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -94,7 +95,16 @@ export const navSections: NavSection[] = [
       },
     ],
   },
-
+  {
+    items: [
+      {
+        label: "Delivery",
+        href: "/delivery",
+        icon: Truck,
+        description: "Delivery zones, pincodes & rules",
+      },
+    ],
+  },
   {
     title: "Storefront",
     items: [
