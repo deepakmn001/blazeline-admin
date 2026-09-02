@@ -41,7 +41,7 @@ api.interceptors.response.use(
 
       try {
         const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh/`,
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/admin/refresh/`,
           { refresh: Cookies.get("refresh_token") }
         );
 

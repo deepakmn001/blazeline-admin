@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 export async function loginAdmin(username: string, password: string) {
   const { data } = await axios.post(
-    `${process.env.NEXT_PUBLIC_API_URL}/auth/login/`,
+    `${process.env.NEXT_PUBLIC_API_URL}/auth/admin/login/`,
     { username, password }
   );
 
