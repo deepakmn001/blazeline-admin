@@ -73,7 +73,7 @@ export const navSections: NavSection[] = [
       },
       {
         label: "Offers",
-        href: "/offers",
+        href: "/promotions",
         icon: Percent,
         description: "Discounts and campaigns",
       },
