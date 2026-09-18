@@ -20,6 +20,7 @@ import { QuickActions } from "@/components/dashboard/quick-actions";
 import { RecentProducts } from "@/components/dashboard/recent-products";
 
 import { getDashboard } from "@/lib/api/dashboard";
+import { CustomerSecurityMetrics } from "@/components/dashboard/customer-security-metrics";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
@@ -95,6 +96,7 @@ export default async function DashboardPage() {
           />
         ))}
       </div>
+      <CustomerSecurityMetrics />
 
       {/* Charts */}
 

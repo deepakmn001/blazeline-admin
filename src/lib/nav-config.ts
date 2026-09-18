@@ -8,6 +8,7 @@ import {
   LayoutTemplate,
   GalleryHorizontal,
   Users,
+    UserRound,
   BarChart3,
   ImagePlus,
   Settings,
@@ -122,7 +123,17 @@ export const navSections: NavSection[] = [
       },
     ],
   },
-
+{
+  title: "Customers",
+  items: [
+    {
+      label: "Customers",
+      href: "/customers",
+      icon: UserRound,
+      description: "Customer accounts and security",
+    },
+  ],
+},
   {
     title: "Growth",
     items: [
