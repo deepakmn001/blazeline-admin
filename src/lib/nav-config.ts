@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   LogOut,
   Upload,
+    MessageCircle,
   ClipboardCheck,
   Truck,
   type LucideIcon,
@@ -144,6 +145,12 @@ export const navSections: NavSection[] = [
         badge: "12",
         description: "Enquiries and quotations",
       },
+        {
+      label: "WhatsApp Inbox",
+      href: "/whatsapp",
+      icon: MessageCircle,
+      description: "Customer WhatsApp conversations",
+    },
       {
         label: "Analytics",
         href: "/analytics",
