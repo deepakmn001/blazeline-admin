@@ -12,6 +12,10 @@ import {
   FileText,
   Mail,
   Package,
+  Send,
+  Upload,
+  Loader2,
+  CheckCircle2,
   Phone,
   RefreshCw,
   Search,
@@ -28,9 +32,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   getAdminInvoice,
   getAdminInvoiceOverview,
   getAdminInvoices,
+  sendAdminInvoiceEmail,
   type DeliveryStatus,
   type InvoiceRecord,
   type InvoiceStatus,
@@ -245,10 +258,12 @@ function InvoiceDetailDrawer({
   invoice,
   loading,
   onClose,
+  onSend,
 }: {
   invoice: InvoiceRecord | null;
   loading: boolean;
   onClose: () => void;
+  onSend: (invoice: InvoiceRecord) => void;
 }) {
   if (!invoice && !loading) return null;
 
@@ -289,6 +304,16 @@ function InvoiceDetailDrawer({
           </div>
 
           <div className="flex items-center gap-2">
+            {invoice?.customer_email ? (
+              <Button
+                size="sm"
+                onClick={() => invoice && onSend(invoice)}
+              >
+                <Send className="h-3.5 w-3.5" />
+                {invoice.email_status === "sent" ? "Resend invoice" : "Send invoice"}
+              </Button>
+            ) : null}
+
             {invoice?.pdf_url && (
               <a
                 href={invoice.pdf_url}
@@ -513,6 +538,162 @@ function InvoiceDetailDrawer({
   );
 }
 
+
+
+function SendInvoiceDialog({
+  invoice,
+  open,
+  mode,
+  file,
+  sending,
+  onOpenChange,
+  onModeChange,
+  onFileChange,
+  onSend,
+}: {
+  invoice: InvoiceRecord | null;
+  open: boolean;
+  mode: "default" | "custom";
+  file: File | null;
+  sending: boolean;
+  onOpenChange: (open: boolean) => void;
+  onModeChange: (mode: "default" | "custom") => void;
+  onFileChange: (file: File | null) => void;
+  onSend: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Send invoice</DialogTitle>
+          <DialogDescription>
+            Send the invoice to the customer email captured on the invoice. The
+            recipient cannot be changed from this admin action.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 px-6 py-5">
+          <div className="rounded-xl border border-line bg-canvas px-4 py-3">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-faint">
+                  Invoice
+                </p>
+                <p className="mt-1 truncate text-sm font-semibold text-ink">
+                  {invoice?.invoice_number || "—"}
+                </p>
+              </div>
+              <div className="min-w-0 text-right">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-faint">
+                  Customer email
+                </p>
+                <p className="mt-1 truncate text-sm text-ink-soft">
+                  {invoice?.customer_email || "Not provided"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => onModeChange("default")}
+              disabled={sending}
+              className={`rounded-xl border p-4 text-left transition ${
+                mode === "default"
+                  ? "border-brand-300 bg-brand-50 ring-2 ring-brand-100"
+                  : "border-line bg-white hover:bg-canvas"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700">
+                  <FileText className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-ink">Default invoice</p>
+                  <p className="mt-1 text-xs leading-5 text-ink-soft">
+                    Use the standard BlazeLine system-generated invoice PDF.
+                  </p>
+                </div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onModeChange("custom")}
+              disabled={sending}
+              className={`rounded-xl border p-4 text-left transition ${
+                mode === "custom"
+                  ? "border-brand-300 bg-brand-50 ring-2 ring-brand-100"
+                  : "border-line bg-white hover:bg-canvas"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+                  <Upload className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-ink">Custom PDF</p>
+                  <p className="mt-1 text-xs leading-5 text-ink-soft">
+                    Attach your own final invoice PDF for this email only.
+                  </p>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          {mode === "custom" ? (
+            <label className="block rounded-xl border border-dashed border-line bg-canvas p-4">
+              <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+                <Upload className="h-4 w-4 text-brand-600" />
+                Choose invoice PDF
+              </span>
+              <input
+                type="file"
+                accept="application/pdf,.pdf"
+                disabled={sending}
+                onChange={(event) => onFileChange(event.target.files?.[0] ?? null)}
+                className="mt-3 block w-full text-xs text-ink-soft file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-semibold file:text-ink file:shadow-card"
+              />
+              <p className="mt-2 text-[11px] leading-5 text-ink-faint">
+                PDF only · maximum 10 MB · this upload does not replace the stored invoice PDF.
+              </p>
+              {file ? (
+                <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  <span className="min-w-0 truncate font-medium">{file.name}</span>
+                  <span className="shrink-0 text-emerald-700">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                </div>
+              ) : null}
+            </label>
+          ) : null}
+
+          <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-5 text-amber-900">
+            <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span>
+              Sending is manual. No invoice email is sent automatically when an order is completed.
+            </span>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={sending}>
+            Cancel
+          </Button>
+          <Button
+            onClick={onSend}
+            disabled={sending || !invoice?.customer_email || (mode === "custom" && !file)}
+          >
+            {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            {sending ? "Sending…" : mode === "custom" ? "Send custom invoice" : "Send invoice"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
 export default function InvoicesPage() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -535,6 +716,11 @@ export default function InvoicesPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRecord | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+
+  const [sendTarget, setSendTarget] = useState<InvoiceRecord | null>(null);
+  const [sendMode, setSendMode] = useState<"default" | "custom">("default");
+  const [customFile, setCustomFile] = useState<File | null>(null);
+  const [sendingInvoice, setSendingInvoice] = useState(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -618,6 +804,72 @@ export default function InvoicesPage() {
       setDetailLoading(false);
     }
   }, []);
+
+  const requestSend = useCallback((invoice: InvoiceRecord) => {
+    setSendTarget(invoice);
+    setSendMode("default");
+    setCustomFile(null);
+  }, []);
+
+  const handleSendInvoice = useCallback(async () => {
+    if (!sendTarget) return;
+
+    if (sendMode === "custom") {
+      if (!customFile) {
+        setError("Choose a PDF file before sending the custom invoice.");
+        return;
+      }
+      if (customFile.size > 10 * 1024 * 1024) {
+        setError("Custom invoice PDF must be 10 MB or smaller.");
+        return;
+      }
+      const isPdf = customFile.type === "application/pdf" || customFile.name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) {
+        setError("Only PDF files can be sent as custom invoices.");
+        return;
+      }
+    }
+
+    setSendingInvoice(true);
+    setError("");
+
+    try {
+      await sendAdminInvoiceEmail(
+        sendTarget.id,
+        sendMode === "custom"
+          ? { mode: "custom", file: customFile as File }
+          : { mode: "default" },
+      );
+
+      setSendTarget(null);
+      setCustomFile(null);
+      setSendMode("default");
+
+      await Promise.all([loadOverview(), loadList()]);
+
+      if (selectedId === sendTarget.id) {
+        try {
+          setSelectedInvoice(await getAdminInvoice(sendTarget.id));
+        } catch {
+          // The send succeeded; keeping the existing drawer is safer than
+          // turning a successful action into a visible fetch error.
+        }
+      }
+    } catch (sendError) {
+      setError(getErrorMessage(sendError));
+    } finally {
+      setSendingInvoice(false);
+    }
+  }, [customFile, loadList, loadOverview, selectedId, sendMode, sendTarget]);
+
+  const closeSendDialog = useCallback((open: boolean) => {
+    if (!open && sendingInvoice) return;
+    if (!open) {
+      setSendTarget(null);
+      setCustomFile(null);
+      setSendMode("default");
+    }
+  }, [sendingInvoice]);
 
   const closeInvoice = () => {
     setSelectedId(null);
@@ -787,7 +1039,7 @@ export default function InvoicesPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[1120px] w-full text-left">
+          <table className="min-w-[1240px] w-full text-left">
             <thead>
               <tr className="border-b border-line bg-canvas/70 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink-faint">
                 <th className="px-5 py-3">Invoice</th>
@@ -797,6 +1049,7 @@ export default function InvoicesPage() {
                 <th className="px-4 py-3">Payment</th>
                 <th className="px-4 py-3">Delivery</th>
                 <th className="px-5 py-3 text-right">Issued</th>
+                <th className="px-5 py-3 text-right">Action</th>
               </tr>
             </thead>
 
@@ -804,14 +1057,14 @@ export default function InvoicesPage() {
               {listLoading ? (
                 Array.from({ length: 8 }).map((_, index) => (
                   <tr key={index} className="border-b border-line">
-                    <td colSpan={7} className="px-5 py-4">
+                    <td colSpan={8} className="px-5 py-4">
                       <div className="h-10 animate-pulse rounded-lg bg-slate-100" />
                     </td>
                   </tr>
                 ))
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-16 text-center">
+                  <td colSpan={8} className="px-5 py-16 text-center">
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
                       <FileText className="h-5 w-5" />
                     </div>
@@ -913,6 +1166,22 @@ export default function InvoicesPage() {
                         {formatDate(invoice.issued_at)}
                       </p>
                     </td>
+
+                    <td className="px-5 py-4 text-right">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        disabled={!invoice.customer_email}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          requestSend(invoice);
+                        }}
+                        title={invoice.customer_email ? undefined : "Customer email is not available"}
+                      >
+                        <Send className="h-3.5 w-3.5" />
+                        {invoice.email_status === "sent" ? "Resend" : "Send"}
+                      </Button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -958,11 +1227,24 @@ export default function InvoicesPage() {
         </div>
       </section>
 
+      <SendInvoiceDialog
+        invoice={sendTarget}
+        open={Boolean(sendTarget)}
+        mode={sendMode}
+        file={customFile}
+        sending={sendingInvoice}
+        onOpenChange={closeSendDialog}
+        onModeChange={setSendMode}
+        onFileChange={setCustomFile}
+        onSend={() => void handleSendInvoice()}
+      />
+
       {selectedId ? (
         <InvoiceDetailDrawer
           invoice={selectedInvoice}
           loading={detailLoading}
           onClose={closeInvoice}
+          onSend={requestSend}
         />
       ) : null}
     </div>

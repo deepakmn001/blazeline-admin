@@ -138,3 +138,34 @@ export async function getAdminInvoice(id: string): Promise<InvoiceRecord> {
   const { data } = await api.get<InvoiceRecord>(`/admin/invoices/${id}/`);
   return data;
 }
+
+
+export type SendInvoiceMode = "default" | "custom";
+
+export type SendAdminInvoiceResponse = {
+  message: string;
+  mode: SendInvoiceMode;
+  invoice: InvoiceRecord;
+};
+
+export async function sendAdminInvoiceEmail(
+  id: string,
+  options: { mode: "default" } | { mode: "custom"; file: File },
+): Promise<SendAdminInvoiceResponse> {
+  const formData = new FormData();
+  formData.append("mode", options.mode);
+
+  if (options.mode === "custom") {
+    formData.append("file", options.file, options.file.name);
+  }
+
+  const { data } = await api.post<SendAdminInvoiceResponse>(
+    `/admin/invoices/${id}/send-email/`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+    },
+  );
+
+  return data;
+}
