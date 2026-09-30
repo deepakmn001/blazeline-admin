@@ -18,6 +18,7 @@ import {
     MessageCircle,
   ClipboardCheck,
   Truck,
+    ReceiptText, 
   type LucideIcon,
 } from "lucide-react";
 
@@ -132,6 +133,17 @@ export const navSections: NavSection[] = [
       href: "/customers",
       icon: UserRound,
       description: "Customer accounts and security",
+    },
+  ],
+},
+{
+  title: "Sales",
+  items: [
+    {
+      label: "Invoices",
+      href: "/invoices",
+      icon: ReceiptText,
+      description: "Invoices, payments and billing details",
     },
   ],
 },
