@@ -4,6 +4,7 @@ import {
   FolderTree,
     Layers3,
   Award,
+    ShoppingCart,
   Percent,
   LayoutTemplate,
   GalleryHorizontal,
@@ -139,6 +140,12 @@ export const navSections: NavSection[] = [
 {
   title: "Sales",
   items: [
+    {
+      label: "Direct Orders",
+      href: "/direct-orders",
+      icon: ShoppingCart,
+      description: "Create and manage manual customer orders",
+    },
     {
       label: "Invoices",
       href: "/invoices",
